@@ -10,7 +10,7 @@ import (
 )
 
 var (
-	protocols map[string]int = map[string]int{"UDP": 0, "IPv4": 0, "IPv6": 0}
+	statistics map[string]int = map[string]int{"TCP": 0, "UDP": 0, "IPv4": 0, "IPv6": 0}
 )
 
 func main() {
@@ -28,31 +28,31 @@ func main() {
 	for pkt := range packets {
 		packetStatistics(pkt)
 	}
-	print(protocols)
+	print(statistics)
 }
 func packetStatistics(packet gopacket.Packet) {
 
 	if tcpLayer := packet.Layer(layers.LayerTypeTCP); tcpLayer != nil {
-		protocols["TCP"]++
+		statistics["TCP"]++
 	}
 
 	if udpLayer := packet.Layer(layers.LayerTypeUDP); udpLayer != nil {
-		protocols["UDP"]++
+		statistics["UDP"]++
 	}
 
 	if ipv4Layer := packet.Layer(layers.LayerTypeIPv4); ipv4Layer != nil {
-		protocols["IPv4"]++
+		statistics["IPv4"]++
 	}
 
 	if ipv6Layer := packet.Layer(layers.LayerTypeIPv6); ipv6Layer != nil {
-		protocols["IPv6"]++
+		statistics["IPv6"]++
 	}
 }
 
 func print(arg map[string]int) {
 	fmt.Println("Amounts of TCP, UDP, IPv4 and IPv6 packets:")
-	for protocol, amount := range arg {
-		fmt.Printf("%v: %v\n", protocol, amount)
+	for layer, amount := range arg {
+		fmt.Printf("%v: %v\n", layer, amount)
 	}
 
 }
