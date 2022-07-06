@@ -21,6 +21,15 @@ var (
 )
 
 func main() {
+	parser := gopacket.NewDecodingLayerParser(
+		layers.LayerTypeEthernet,
+		&eth,
+		&ip4,
+		&ip6,
+		&tcp,
+		&udp,
+		&dns,
+	)
 
 	fileName := flag.String("file", "lo.pcap", "The path to the input file")
 	flag.Parse()
@@ -36,15 +45,6 @@ func main() {
 			break
 		}
 
-		parser := gopacket.NewDecodingLayerParser(
-			layers.LayerTypeEthernet,
-			&eth,
-			&ip4,
-			&ip6,
-			&tcp,
-			&udp,
-			&dns,
-		)
 		decoded := make([]gopacket.LayerType, 0, 10)
 
 		parser.DecodeLayers(data, &decoded)
