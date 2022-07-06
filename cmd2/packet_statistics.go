@@ -11,6 +11,13 @@ import (
 
 var (
 	statistics map[string]int = map[string]int{"TCP": 0, "UDP": 0, "IPv4": 0, "IPv6": 0}
+
+	eth layers.Ethernet
+	ip4 layers.IPv4
+	ip6 layers.IPv6
+	tcp layers.TCP
+	udp layers.UDP
+	dns layers.DNS
 )
 
 func main() {
@@ -22,32 +29,41 @@ func main() {
 		panic(err)
 	}
 	defer handle.Close()
+	for {
+		data, _, err := handle.ZeroCopyReadPacketData()
 
-	packets := gopacket.NewPacketSource(
-		handle, handle.LinkType()).Packets()
+		if err != nil {
+			break
+		}
 
-	for pkt := range packets {
-		packetStatistics(pkt)
+		parser := gopacket.NewDecodingLayerParser(
+			layers.LayerTypeEthernet,
+			&eth,
+			&ip4,
+			&ip6,
+			&tcp,
+			&udp,
+			&dns,
+		)
+		decoded := make([]gopacket.LayerType, 0, 10)
+
+		parser.DecodeLayers(data, &decoded)
+
+		for _, layer := range decoded {
+			switch layer {
+			case layers.LayerTypeIPv4:
+				statistics["IPv4"]++
+			case layers.LayerTypeIPv6:
+				statistics["IPv6"]++
+			case layers.LayerTypeTCP:
+				statistics["TCP"]++
+			case layers.LayerTypeUDP:
+				statistics["UDP"]++
+			}
+		}
 	}
+
 	print(statistics)
-}
-func packetStatistics(packet gopacket.Packet) {
-
-	if tcpLayer := packet.Layer(layers.LayerTypeTCP); tcpLayer != nil {
-		statistics["TCP"]++
-	}
-
-	if udpLayer := packet.Layer(layers.LayerTypeUDP); udpLayer != nil {
-		statistics["UDP"]++
-	}
-
-	if ipv4Layer := packet.Layer(layers.LayerTypeIPv4); ipv4Layer != nil {
-		statistics["IPv4"]++
-	}
-
-	if ipv6Layer := packet.Layer(layers.LayerTypeIPv6); ipv6Layer != nil {
-		statistics["IPv6"]++
-	}
 }
 
 func print(arg map[string]int) {

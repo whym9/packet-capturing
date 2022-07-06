@@ -4,7 +4,6 @@ import (
 	"flag"
 	"fmt"
 
-	"github.com/google/gopacket"
 	"github.com/google/gopacket/pcap"
 )
 
@@ -17,11 +16,12 @@ func main() {
 	}
 	defer handle.Close()
 
-	packets := gopacket.NewPacketSource(
-		handle, handle.LinkType()).Packets()
-
 	count := 0
-	for range packets {
+	for {
+		_, _, err := handle.ZeroCopyReadPacketData()
+		if err != nil {
+			break
+		}
 		count++
 	}
 
