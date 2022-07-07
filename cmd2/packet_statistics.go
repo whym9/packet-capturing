@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"io"
 
 	"github.com/google/gopacket"
 	"github.com/google/gopacket/layers"
@@ -38,14 +39,15 @@ func main() {
 		panic(err)
 	}
 	defer handle.Close()
+	decoded := make([]gopacket.LayerType, 0, 10)
 	for {
 		data, _, err := handle.ZeroCopyReadPacketData()
-
-		if err != nil {
+		if err == io.EOF {
 			break
 		}
-
-		decoded := make([]gopacket.LayerType, 0, 10)
+		if err != nil {
+			panic(err)
+		}
 
 		parser.DecodeLayers(data, &decoded)
 
