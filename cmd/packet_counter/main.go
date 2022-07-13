@@ -29,6 +29,5 @@ func main() {
 		}
 		count++
 	}
-
 	fmt.Println(count)
 }

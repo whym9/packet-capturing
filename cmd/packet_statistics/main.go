@@ -39,6 +39,7 @@ func main() {
 		panic(err)
 	}
 	defer handle.Close()
+
 	decoded := make([]gopacket.LayerType, 0, 10)
 	for {
 		data, _, err := handle.ZeroCopyReadPacketData()
